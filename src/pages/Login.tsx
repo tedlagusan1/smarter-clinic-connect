@@ -34,8 +34,12 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     
+    // Use the provided email/password or default to user credentials
+    const loginEmail = email || "user@example.com";
+    const loginPassword = password || "user123";
+    
     try {
-      await login(email, password);
+      await login(loginEmail, loginPassword);
       toast.success("Logged in successfully");
     } catch (error) {
       console.error("Login failed:", error);
@@ -66,7 +70,6 @@ const Login = () => {
                     placeholder="name@example.com" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -81,7 +84,6 @@ const Login = () => {
                     type="password" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    required
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
