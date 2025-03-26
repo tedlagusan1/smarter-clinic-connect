@@ -12,6 +12,10 @@ import Dashboard from "./pages/Dashboard";
 import BookAppointment from "./pages/BookAppointment";
 import Appointments from "./pages/Appointments";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminManageUsers from "./pages/AdminManageUsers";
+import AdminDoctorSchedules from "./pages/AdminDoctorSchedules";
+import AdminAppointments from "./pages/AdminAppointments";
+import AdminNotifications from "./pages/AdminNotifications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +38,10 @@ const App = () => (
             
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminManageUsers />} />
+            <Route path="/admin/doctors" element={<AdminDoctorSchedules />} />
+            <Route path="/admin/appointments" element={<AdminAppointments />} />
+            <Route path="/admin/notifications" element={<AdminNotifications />} />
             
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
