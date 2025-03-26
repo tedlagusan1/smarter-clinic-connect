@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Shell, SiteHeader } from "@/components/layout/Shell";
 import { Button } from "@/components/ui/button";
@@ -13,17 +13,28 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
+import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Login = () => {
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here we would normally authenticate the user
-    console.log("Login attempt with:", { email, password });
-    // For demo purposes, redirect to dashboard
-    window.location.href = "/dashboard";
+    setIsLoading(true);
+    
+    try {
+      await login(email, password);
+      toast.success("Logged in successfully");
+    } catch (error) {
+      console.error("Login failed:", error);
+      toast.error("Invalid email or password");
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (
@@ -65,7 +76,9 @@ const Login = () => {
                     required
                   />
                 </div>
-                <Button type="submit" className="w-full">Sign In</Button>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Signing in..." : "Sign In"}
+                </Button>
               </form>
               
               <div className="mt-4 text-center text-sm">
@@ -73,6 +86,13 @@ const Login = () => {
                 <Link to="/register" className="text-primary hover:underline">
                   Sign up
                 </Link>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="text-center text-sm text-muted-foreground">
+                  <p>Admin access: admin@example.com / admin123</p>
+                  <p>Test user: user@example.com / user123</p>
+                </div>
               </div>
             </CardContent>
             <CardFooter className="border-t px-6 py-4">
