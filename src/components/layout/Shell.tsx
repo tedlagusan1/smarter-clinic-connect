@@ -44,15 +44,16 @@ export function SiteHeader() {
         <span>SmarterClinic</span>
       </Link>
       <nav className="hidden md:flex items-center space-x-6">
-        <Link to="/features" className="text-sm font-medium transition-colors hover:text-primary link-underline">
+        {/* Replace Links that don't have defined routes with spans */}
+        <span className="text-sm font-medium transition-colors hover:text-primary link-underline cursor-pointer">
           Features
-        </Link>
-        <Link to="/about" className="text-sm font-medium transition-colors hover:text-primary link-underline">
+        </span>
+        <span className="text-sm font-medium transition-colors hover:text-primary link-underline cursor-pointer">
           About
-        </Link>
-        <Link to="/contact" className="text-sm font-medium transition-colors hover:text-primary link-underline">
+        </span>
+        <span className="text-sm font-medium transition-colors hover:text-primary link-underline cursor-pointer">
           Contact
-        </Link>
+        </span>
         <Link to="/login" className="text-sm font-medium px-4 py-2 rounded-md bg-primary text-white hover:bg-primary/90 transition-colors">
           Sign In
         </Link>
