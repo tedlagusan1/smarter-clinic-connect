@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { Shell, SiteHeader } from "@/components/layout/Shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,26 +20,14 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login, isAuthenticated, isAdmin } = useAuth();
-  const navigate = useNavigate();
-  
-  // Redirect if already logged in
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate(isAdmin ? "/admin" : "/dashboard");
-    }
-  }, [isAuthenticated, isAdmin, navigate]);
+  const { login } = useAuth();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Use the provided email/password or default to user credentials
-    const loginEmail = email || "user@example.com";
-    const loginPassword = password || "user123";
-    
     try {
-      await login(loginEmail, loginPassword);
+      await login(email, password);
       toast.success("Logged in successfully");
     } catch (error) {
       console.error("Login failed:", error);
@@ -70,6 +58,7 @@ const Login = () => {
                     placeholder="name@example.com" 
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
                   />
                 </div>
                 <div className="space-y-2">
@@ -84,6 +73,7 @@ const Login = () => {
                     type="password" 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    required
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>

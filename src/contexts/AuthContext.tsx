@@ -45,15 +45,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
-      
-      // Ensure user is directed to the correct dashboard on refresh
-      if (window.location.pathname === '/login' || window.location.pathname === '/register') {
-        navigate(parsedUser.role === "admin" ? "/admin" : "/dashboard");
-      }
+      setUser(JSON.parse(storedUser));
     }
-  }, [navigate]);
+  }, []);
   
   const login = async (email: string, password: string) => {
     // In a real app, you would validate against a server

@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React from "react";
+import { Link } from "react-router-dom";
 import { Shell, SiteHeader } from "@/components/layout/Shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,57 +14,31 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { toast } from "sonner";
-import { useAuth } from "@/contexts/AuthContext";
 
 const Register = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [agreeTerms, setAgreeTerms] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { isAuthenticated, isAdmin } = useAuth();
-  const navigate = useNavigate();
-  
-  // Redirect if already logged in
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate(isAdmin ? "/admin" : "/dashboard");
-    }
-  }, [isAuthenticated, isAdmin, navigate]);
+  const [name, setName] = React.useState("");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [agreeTerms, setAgreeTerms] = React.useState(false);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
     // Validate form
     if (password !== confirmPassword) {
-      toast.error("Passwords do not match!");
-      setIsLoading(false);
+      alert("Passwords do not match!");
       return;
     }
     
     if (!agreeTerms) {
-      toast.error("You must agree to the terms and conditions");
-      setIsLoading(false);
+      alert("You must agree to the terms and conditions");
       return;
     }
     
     // Here we would normally register the user
-    try {
-      console.log("Register attempt with:", { name, email, password });
-      // For demo purposes, simulate successful registration
-      setTimeout(() => {
-        toast.success("Registration successful! You can now login.");
-        navigate("/login");
-        setIsLoading(false);
-      }, 1000);
-    } catch (error) {
-      console.error("Registration failed:", error);
-      toast.error("Registration failed. Please try again.");
-      setIsLoading(false);
-    }
+    console.log("Register attempt with:", { name, email, password });
+    // For demo purposes, redirect to login
+    window.location.href = "/login";
   };
   
   return (
@@ -141,9 +115,7 @@ const Register = () => {
                     </Link>
                   </label>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Creating Account..." : "Create Account"}
-                </Button>
+                <Button type="submit" className="w-full">Create Account</Button>
               </form>
               
               <div className="mt-4 text-center text-sm">
