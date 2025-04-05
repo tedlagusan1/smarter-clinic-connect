@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Shell, DashboardHeader, DashboardSidebar } from "@/components/layout/Shell";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
@@ -83,6 +83,13 @@ const timeSlots = [
   "4:30 PM",
 ];
 
+// Type for booked appointments
+interface BookedAppointment {
+  doctorId: number;
+  date: string;
+  time: string;
+}
+
 const BookAppointment = () => {
   const navigate = useNavigate();
   const [specialty, setSpecialty] = useState("");
@@ -91,6 +98,15 @@ const BookAppointment = () => {
   const [time, setTime] = useState("");
   const [reason, setReason] = useState("");
   const [step, setStep] = useState(1);
+  const [bookedAppointments, setBookedAppointments] = useState<BookedAppointment[]>([]);
+  
+  // Load booked appointments from localStorage on component mount
+  useEffect(() => {
+    const storedAppointments = localStorage.getItem("bookedAppointments");
+    if (storedAppointments) {
+      setBookedAppointments(JSON.parse(storedAppointments));
+    }
+  }, []);
   
   // List of available specialties from our doctor data
   const specialties = [...new Set(doctors.map(doctor => doctor.specialty))];
@@ -116,6 +132,24 @@ const BookAppointment = () => {
     return selectedDoctor.availableDays.includes(dayOfWeek);
   };
   
+  // Check if a time slot is already booked for selected doctor and date
+  const isTimeSlotBooked = (time: string) => {
+    if (!date || !doctorId) return false;
+    
+    const formattedDate = format(date, "yyyy-MM-dd");
+    return bookedAppointments.some(
+      appointment => 
+        appointment.doctorId === parseInt(doctorId) && 
+        appointment.date === formattedDate && 
+        appointment.time === time
+    );
+  };
+  
+  // Get available time slots for selected doctor and date
+  const getAvailableTimeSlots = () => {
+    return timeSlots.filter(slot => !isTimeSlotBooked(slot));
+  };
+  
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,13 +159,35 @@ const BookAppointment = () => {
       return;
     }
     
+    const formattedDate = format(date, "yyyy-MM-dd");
+    
+    // Check if appointment is already booked
+    if (isTimeSlotBooked(time)) {
+      toast.error("This time slot is no longer available. Please choose another time.");
+      return;
+    }
+    
+    // Add the new appointment to booked appointments
+    const newBookedAppointments = [
+      ...bookedAppointments,
+      {
+        doctorId: parseInt(doctorId),
+        date: formattedDate,
+        time
+      }
+    ];
+    
+    // Save to localStorage
+    localStorage.setItem("bookedAppointments", JSON.stringify(newBookedAppointments));
+    setBookedAppointments(newBookedAppointments);
+    
     // Here we would normally submit the appointment data to a server
     toast.success("Appointment booked successfully!");
     console.log({
       specialty,
       doctorId,
       doctorName: selectedDoctor?.name,
-      date: date ? format(date, "yyyy-MM-dd") : "",
+      date: formattedDate,
       time,
       reason
     });
@@ -288,7 +344,10 @@ const BookAppointment = () => {
                           <Calendar
                             mode="single"
                             selected={date}
-                            onSelect={setDate}
+                            onSelect={(newDate) => {
+                              setDate(newDate);
+                              setTime(""); // Clear time when date changes
+                            }}
                             disabled={(date) => {
                               const day = date.getDay();
                               // Disable weekends and dates in the past
@@ -315,13 +374,25 @@ const BookAppointment = () => {
                             <SelectValue placeholder="Select a time slot" />
                           </SelectTrigger>
                           <SelectContent>
-                            {timeSlots.map((slot) => (
-                              <SelectItem key={slot} value={slot}>
-                                {slot}
+                            {getAvailableTimeSlots().length > 0 ? (
+                              getAvailableTimeSlots().map((slot) => (
+                                <SelectItem key={slot} value={slot}>
+                                  {slot}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <SelectItem value="" disabled>
+                                No available time slots for this date
                               </SelectItem>
-                            ))}
+                            )}
                           </SelectContent>
                         </Select>
+                        
+                        {getAvailableTimeSlots().length === 0 && (
+                          <p className="text-sm text-yellow-600 mt-2">
+                            All time slots for this date are booked. Please select another date.
+                          </p>
+                        )}
                       </div>
                     )}
                   </div>
