@@ -1,6 +1,8 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { UserNotifications } from "@/components/UserNotifications";
 
 interface ShellProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -71,6 +73,7 @@ export function DashboardHeader() {
         <span>SmarterClinic</span>
       </Link>
       <div className="flex items-center space-x-4">
+        <UserNotifications />
         <Link to="/dashboard/profile" className="text-sm font-medium transition-colors hover:text-primary">
           Profile
         </Link>

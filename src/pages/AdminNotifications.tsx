@@ -28,34 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-
-// Mock data for sent notifications
-const notificationsData = [
-  {
-    id: 1,
-    title: "Appointment Reminder",
-    message: "This is a reminder for your upcoming appointments tomorrow. Please arrive 15 minutes before your scheduled time.",
-    recipients: "All patients with appointments tomorrow (15)",
-    sentDate: "2023-06-14 10:30 AM",
-    sentBy: "Admin"
-  },
-  {
-    id: 2,
-    title: "Schedule Change Notice",
-    message: "Dr. Michael Chen will not be available on Friday, June 16. All appointments have been rescheduled for Monday, June 19.",
-    recipients: "Patients of Dr. Chen with Friday appointments (3)",
-    sentDate: "2023-06-13 02:15 PM",
-    sentBy: "Admin"
-  },
-  {
-    id: 3,
-    title: "Health Tips Newsletter",
-    message: "Our monthly health tips newsletter with information about seasonal allergies and preventive care.",
-    recipients: "All patients (2,578)",
-    sentDate: "2023-06-01 09:00 AM",
-    sentBy: "System"
-  }
-];
+import { useNotifications } from "@/contexts/NotificationsContext";
 
 // Mock data for notification templates
 const templateData = [
@@ -88,7 +61,7 @@ const recipientGroups = [
 ];
 
 const AdminNotifications = () => {
-  const [notifications, setNotifications] = useState(notificationsData);
+  const { notifications, addNotification } = useNotifications();
   const [templates, setTemplates] = useState(templateData);
   const [showNewNotification, setShowNewNotification] = useState(false);
   const [newNotification, setNewNotification] = useState({
@@ -122,19 +95,12 @@ const AdminNotifications = () => {
       return;
     }
     
-    const now = new Date();
-    const formattedDate = `${now.toLocaleDateString()} ${now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-    
-    const newNotificationEntry = {
-      id: Math.max(...notifications.map(n => n.id), 0) + 1,
+    addNotification({
       title: newNotification.title,
       message: newNotification.message,
-      recipients: `${recipientGroup.name} (${recipientGroup.count})`,
-      sentDate: formattedDate,
-      sentBy: "Admin"
-    };
+      recipients: `${recipientGroup.name} (${recipientGroup.count})`
+    });
     
-    setNotifications([newNotificationEntry, ...notifications]);
     setShowNewNotification(false);
     setNewNotification({
       title: "",
