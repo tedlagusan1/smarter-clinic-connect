@@ -21,7 +21,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
+import { Toaster } from "@/components/ui/toaster";
 
 // Mock data for upcoming appointments
 const upcomingAppointmentsData = [
@@ -85,10 +87,15 @@ const Appointments = () => {
   const [appointmentToReschedule, setAppointmentToReschedule] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
+  const navigate = useNavigate();
   
   const handleCancelAppointment = () => {
     if (!cancelReason) {
-      toast.error("Please provide a reason for cancellation");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please provide a reason for cancellation"
+      });
       return;
     }
     
@@ -112,7 +119,11 @@ const Appointments = () => {
       setUpcomingAppointments(upcomingAppointments.filter(appointment => appointment.id !== appointmentToCancel));
     }
     
-    toast.success("Appointment cancelled successfully");
+    toast({
+      title: "Success",
+      description: "Appointment cancelled successfully"
+    });
+    
     setCancelReason("");
     setAppointmentToCancel(null);
     setDialogOpen(false);
@@ -120,12 +131,20 @@ const Appointments = () => {
   
   const handleRescheduleRequest = () => {
     if (!rescheduleNote) {
-      toast.error("Please provide a note for reschedule request");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please provide a note for reschedule request"
+      });
       return;
     }
     
     // Here we would typically send the reschedule request to the backend
-    toast.success("Reschedule request sent successfully");
+    toast({
+      title: "Success",
+      description: "Reschedule request sent successfully"
+    });
+    
     setRescheduleNote("");
     setAppointmentToReschedule(null);
     setRescheduleDialogOpen(false);
@@ -150,7 +169,7 @@ const Appointments = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">My Appointments</h1>
-          <Button onClick={() => window.location.href = "/dashboard/book"}>
+          <Button onClick={() => navigate("/dashboard/book")}>
             Book New Appointment
           </Button>
         </div>
@@ -168,7 +187,7 @@ const Appointments = () => {
                   <div className="text-center py-6">
                     <h3 className="text-lg font-medium mb-2">No upcoming appointments</h3>
                     <p className="text-muted-foreground mb-4">You don't have any scheduled appointments.</p>
-                    <Button onClick={() => window.location.href = "/dashboard/book"}>
+                    <Button onClick={() => navigate("/dashboard/book")}>
                       Book an Appointment
                     </Button>
                   </div>
@@ -362,6 +381,7 @@ const Appointments = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        <Toaster />
       </div>
     </Shell>
   );

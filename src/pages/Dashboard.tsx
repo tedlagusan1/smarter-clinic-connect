@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Shell, DashboardHeader, DashboardSidebar } from "@/components/layout/Shell";
 import { Button } from "@/components/ui/button";
 import { 
@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/card";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  
   // Mock data for upcoming appointments
   const upcomingAppointments = [
     {
@@ -58,9 +60,9 @@ const Dashboard = () => {
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
           <div className="flex items-center space-x-2">
-            <Link to="/dashboard/book">
-              <Button>Book New Appointment</Button>
-            </Link>
+            <Button onClick={() => navigate("/dashboard/book")}>
+              Book New Appointment
+            </Button>
           </div>
         </div>
         
@@ -153,11 +155,12 @@ const Dashboard = () => {
                           {appointment.status}
                         </span>
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
-                            Reschedule
-                          </Button>
-                          <Button variant="outline" size="sm" className="text-destructive">
-                            Cancel
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => navigate("/appointments")}
+                          >
+                            Manage
                           </Button>
                         </div>
                       </div>
