@@ -18,6 +18,9 @@ import AdminManageUsers from "./pages/AdminManageUsers";
 import AdminDoctorSchedules from "./pages/AdminDoctorSchedules";
 import AdminAppointments from "./pages/AdminAppointments";
 import AdminNotifications from "./pages/AdminNotifications";
+import Features from "./pages/Features";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +36,9 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/features" element={<Features />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
               
               {/* Patient Routes - Protected */}
               <Route path="/dashboard" element={

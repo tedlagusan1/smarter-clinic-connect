@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -44,16 +43,15 @@ export function SiteHeader() {
         <span>SmarterClinic</span>
       </Link>
       <nav className="hidden md:flex items-center space-x-6">
-        {/* Replace Links that don't have defined routes with spans */}
-        <span className="text-sm font-medium transition-colors hover:text-primary link-underline cursor-pointer">
+        <Link to="/features" className="text-sm font-medium transition-colors hover:text-primary link-underline">
           Features
-        </span>
-        <span className="text-sm font-medium transition-colors hover:text-primary link-underline cursor-pointer">
+        </Link>
+        <Link to="/about" className="text-sm font-medium transition-colors hover:text-primary link-underline">
           About
-        </span>
-        <span className="text-sm font-medium transition-colors hover:text-primary link-underline cursor-pointer">
+        </Link>
+        <Link to="/contact" className="text-sm font-medium transition-colors hover:text-primary link-underline">
           Contact
-        </span>
+        </Link>
         <Link to="/login" className="text-sm font-medium px-4 py-2 rounded-md bg-primary text-white hover:bg-primary/90 transition-colors">
           Sign In
         </Link>
