@@ -158,7 +158,7 @@ const Dashboard = () => {
                           <Button 
                             variant="outline" 
                             size="sm"
-                            onClick={() => navigate("/appointments")}
+                            onClick={() => navigate("/dashboard/appointments")}
                           >
                             Manage
                           </Button>
