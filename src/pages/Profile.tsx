@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Shell, DashboardHeader, DashboardSidebar } from "@/components/layout/Shell";
@@ -9,10 +9,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, UserRound, Mail, Key, Save } from "lucide-react";
+import { User, UserRound, Mail, Key, Save, Settings as SettingsIcon } from "lucide-react";
 
 const Profile = () => {
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, updateProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
@@ -47,8 +47,12 @@ const Profile = () => {
       return;
     }
     
-    // In a real app, you would send this data to your backend
-    // For now, we'll just show a success message
+    // Update profile (in a real app, you would also handle password change)
+    updateProfile({
+      name: formData.name,
+      email: formData.email
+    });
+    
     toast({
       title: "Profile updated",
       description: "Your profile information has been updated successfully.",
@@ -70,11 +74,17 @@ const Profile = () => {
       <div className="container max-w-6xl mx-auto py-6 px-4 md:px-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold tracking-tight">My Profile</h1>
-          {!isEditing && (
-            <Button onClick={() => setIsEditing(true)}>
-              Edit Profile
+          <div className="flex space-x-3">
+            {!isEditing && (
+              <Button onClick={() => setIsEditing(true)}>
+                Edit Profile
+              </Button>
+            )}
+            <Button variant="outline" onClick={() => navigate("/dashboard/settings")}>
+              <SettingsIcon className="mr-2 h-4 w-4" />
+              Settings
             </Button>
-          )}
+          </div>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

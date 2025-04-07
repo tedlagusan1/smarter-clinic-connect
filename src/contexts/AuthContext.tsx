@@ -7,6 +7,24 @@ type User = {
   name: string;
   email: string;
   role: "admin" | "user";
+  settings?: UserSettings;
+};
+
+type UserSettings = {
+  notifications?: {
+    email?: boolean;
+    appointment?: boolean;
+    reminders?: boolean;
+  };
+  appearance?: {
+    darkMode?: boolean;
+    compactView?: boolean;
+  };
+  privacy?: {
+    twoFactorAuth?: boolean;
+    dataSharing?: boolean;
+  };
+  language?: string;
 };
 
 type AuthContextType = {
@@ -16,6 +34,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   isAdmin: boolean;
   updateProfile: (data: Partial<User>) => void;
+  updateSettings: (settings: UserSettings) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -27,14 +46,46 @@ const USERS = [
     name: "Admin User",
     email: "admin@example.com",
     password: "admin123",
-    role: "admin" as const
+    role: "admin" as const,
+    settings: {
+      notifications: {
+        email: true,
+        appointment: true,
+        reminders: true,
+      },
+      appearance: {
+        darkMode: false,
+        compactView: false,
+      },
+      privacy: {
+        twoFactorAuth: false,
+        dataSharing: true,
+      },
+      language: "English",
+    }
   },
   {
     id: "2",
     name: "Test User",
     email: "user@example.com",
     password: "user123",
-    role: "user" as const
+    role: "user" as const,
+    settings: {
+      notifications: {
+        email: true,
+        appointment: true,
+        reminders: false,
+      },
+      appearance: {
+        darkMode: true,
+        compactView: true,
+      },
+      privacy: {
+        twoFactorAuth: false,
+        dataSharing: false,
+      },
+      language: "English",
+    }
   }
 ];
 
@@ -88,6 +139,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
   
+  // New function to update user settings
+  const updateSettings = (settings: UserSettings) => {
+    if (user) {
+      const updatedUser = { 
+        ...user, 
+        settings: {
+          ...user.settings,
+          ...settings
+        } 
+      };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+  
   return (
     <AuthContext.Provider 
       value={{ 
@@ -95,6 +161,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login, 
         logout,
         updateProfile,
+        updateSettings,
         isAuthenticated: !!user,
         isAdmin: user?.role === "admin"
       }}
