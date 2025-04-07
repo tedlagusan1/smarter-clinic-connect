@@ -11,20 +11,20 @@ type User = {
 };
 
 type UserSettings = {
-  notifications?: {
-    email?: boolean;
-    appointment?: boolean;
-    reminders?: boolean;
+  notifications: {
+    email: boolean;
+    appointment: boolean;
+    reminders: boolean;
   };
-  appearance?: {
-    darkMode?: boolean;
-    compactView?: boolean;
+  appearance: {
+    darkMode: boolean;
+    compactView: boolean;
   };
-  privacy?: {
-    twoFactorAuth?: boolean;
-    dataSharing?: boolean;
+  privacy: {
+    twoFactorAuth: boolean;
+    dataSharing: boolean;
   };
-  language?: string;
+  language: string;
 };
 
 type AuthContextType = {
@@ -34,7 +34,7 @@ type AuthContextType = {
   isAuthenticated: boolean;
   isAdmin: boolean;
   updateProfile: (data: Partial<User>) => void;
-  updateSettings: (settings: UserSettings) => void;
+  updateSettings: (settings: Partial<UserSettings>) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -139,16 +139,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
   
-  // Function to update user settings
-  const updateSettings = (settings: UserSettings) => {
-    if (user) {
+  // Function to update user settings - Updated to handle partial settings updates
+  const updateSettings = (settings: Partial<UserSettings>) => {
+    if (user && user.settings) {
+      const updatedSettings = {
+        notifications: {
+          ...user.settings.notifications,
+          ...(settings.notifications || {})
+        },
+        appearance: {
+          ...user.settings.appearance,
+          ...(settings.appearance || {})
+        },
+        privacy: {
+          ...user.settings.privacy,
+          ...(settings.privacy || {})
+        },
+        language: settings.language || user.settings.language
+      };
+      
       const updatedUser = { 
         ...user, 
-        settings: {
-          ...user.settings,
-          ...settings
-        } 
+        settings: updatedSettings
       };
+      
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
     }

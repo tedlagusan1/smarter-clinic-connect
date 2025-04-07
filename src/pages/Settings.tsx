@@ -23,12 +23,32 @@ import {
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
+// Define the settings state type to match our expected structure
+type SettingsState = {
+  notifications: {
+    email: boolean;
+    appointment: boolean;
+    reminders: boolean;
+  };
+  appearance: {
+    darkMode: boolean;
+    compactView: boolean;
+  };
+  privacy: {
+    twoFactorAuth: boolean;
+    dataSharing: boolean;
+  };
+  language: string;
+  feedbackMessage: string;
+};
+
 const Settings = () => {
   const { user, logout, updateSettings } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  const [settings, setSettings] = useState({
+  // Initialize settings state with proper types
+  const [settings, setSettings] = useState<SettingsState>({
     notifications: {
       email: true,
       appointment: true,
@@ -51,17 +71,28 @@ const Settings = () => {
     if (user?.settings) {
       setSettings(prevSettings => ({
         ...prevSettings,
-        ...user.settings,
-        feedbackMessage: "", // Always reset feedback message
+        notifications: {
+          ...prevSettings.notifications,
+          ...user.settings.notifications
+        },
+        appearance: {
+          ...prevSettings.appearance,
+          ...user.settings.appearance
+        },
+        privacy: {
+          ...prevSettings.privacy,
+          ...user.settings.privacy
+        },
+        language: user.settings.language,
       }));
     }
   }, [user]);
   
-  const handleChange = (category: string, setting: string, value: boolean) => {
+  const handleChange = (category: keyof Omit<SettingsState, 'feedbackMessage'>, setting: string, value: boolean) => {
     setSettings(prev => ({
       ...prev,
       [category]: {
-        ...prev[category as keyof typeof prev],
+        ...prev[category],
         [setting]: value
       }
     }));
@@ -75,8 +106,10 @@ const Settings = () => {
   };
   
   const handleSaveSettings = () => {
-    // Save settings to AuthContext (excluding feedback message)
+    // Extract only the settings that should be saved (not feedback)
     const { feedbackMessage, ...settingsToSave } = settings;
+    
+    // Update settings through context
     updateSettings(settingsToSave);
     
     toast({
