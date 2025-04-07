@@ -31,6 +31,7 @@ type AuthContextType = {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  registerUser: (name: string, email: string, password: string) => Promise<void>;
   isAuthenticated: boolean;
   isAdmin: boolean;
   updateProfile: (data: Partial<User>) => void;
@@ -39,7 +40,7 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// Mock users database
+// Mock users database - we'll add to this when registering new users
 const USERS = [
   {
     id: "1",
@@ -91,6 +92,12 @@ const USERS = [
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [users, setUsers] = useState(() => {
+    // Initialize users from localStorage or use the default USERS
+    const storedUsers = localStorage.getItem("users");
+    return storedUsers ? JSON.parse(storedUsers) : USERS;
+  });
+  
   const navigate = useNavigate();
   
   // Check for stored user on initial load
@@ -99,11 +106,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
-  }, []);
+    
+    // Save users to localStorage
+    localStorage.setItem("users", JSON.stringify(users));
+  }, [users]);
+  
+  // Register a new user
+  const registerUser = async (name: string, email: string, password: string) => {
+    // Check if email already exists
+    if (users.some((u: any) => u.email === email)) {
+      throw new Error("Email already in use");
+    }
+    
+    // Create a new user
+    const newUser = {
+      id: String(users.length + 1),
+      name,
+      email,
+      password,
+      role: "user" as const,
+      settings: {
+        notifications: {
+          email: true,
+          appointment: true,
+          reminders: false,
+        },
+        appearance: {
+          darkMode: false,
+          compactView: false,
+        },
+        privacy: {
+          twoFactorAuth: false,
+          dataSharing: true,
+        },
+        language: "English",
+      }
+    };
+    
+    // Add user to users array
+    const updatedUsers = [...users, newUser];
+    setUsers(updatedUsers);
+    
+    // Save to localStorage
+    localStorage.setItem("users", JSON.stringify(updatedUsers));
+    
+    return Promise.resolve();
+  };
   
   const login = async (email: string, password: string) => {
     // In a real app, you would validate against a server
-    const foundUser = USERS.find(u => u.email === email && u.password === password);
+    const foundUser = users.find((u: any) => u.email === email && u.password === password);
     
     if (foundUser) {
       // Create a user object without the password
@@ -136,6 +188,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updatedUser = { ...user, ...data };
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
+      
+      // Also update in users array
+      const updatedUsers = users.map((u: any) => {
+        if (u.id === user.id) {
+          return { ...u, ...data, password: u.password };
+        }
+        return u;
+      });
+      
+      setUsers(updatedUsers);
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
     }
   };
   
@@ -165,6 +228,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       setUser(updatedUser);
       localStorage.setItem("user", JSON.stringify(updatedUser));
+      
+      // Also update in users array
+      const updatedUsers = users.map((u: any) => {
+        if (u.id === user.id) {
+          return { ...u, settings: updatedSettings, password: u.password };
+        }
+        return u;
+      });
+      
+      setUsers(updatedUsers);
+      localStorage.setItem("users", JSON.stringify(updatedUsers));
     }
   };
   
@@ -174,6 +248,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user, 
         login, 
         logout,
+        registerUser,
         updateProfile,
         updateSettings,
         isAuthenticated: !!user,

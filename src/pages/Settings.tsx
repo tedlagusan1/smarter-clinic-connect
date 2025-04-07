@@ -1,25 +1,36 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import { Shell, DashboardHeader, DashboardSidebar } from "@/components/layout/Shell";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 import { 
-  BellRing, 
-  Moon, 
-  Sun, 
-  Lock, 
-  Bell, 
-  Languages, 
-  Trash2, 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue, 
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Bell,
+  Moon,
+  Settings2,
+  Languages,
+  KeyRound,
+  Share2,
+  FileEdit,
   LogOut,
-  Save,
-  User
+  Trash2
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
@@ -52,7 +63,7 @@ const Settings = () => {
     notifications: {
       email: true,
       appointment: true,
-      reminders: true,
+      reminders: false,
     },
     appearance: {
       darkMode: false,
@@ -66,7 +77,6 @@ const Settings = () => {
     feedbackMessage: "",
   });
   
-  // Load user settings when component mounts
   useEffect(() => {
     if (user?.settings) {
       setSettings(prevSettings => ({
@@ -89,12 +99,22 @@ const Settings = () => {
   }, [user]);
   
   const handleChange = (category: keyof Omit<SettingsState, 'feedbackMessage'>, setting: string, value: boolean) => {
+    setSettings(prev => {
+      const updatedSettings = { ...prev };
+      if (category === 'notifications' || category === 'appearance' || category === 'privacy') {
+        updatedSettings[category] = {
+          ...updatedSettings[category],
+          [setting]: value
+        };
+      }
+      return updatedSettings;
+    });
+  };
+  
+  const handleLanguageChange = (value: string) => {
     setSettings(prev => ({
       ...prev,
-      [category]: {
-        ...prev[category],
-        [setting]: value
-      }
+      language: value
     }));
   };
   
@@ -113,8 +133,8 @@ const Settings = () => {
     updateSettings(settingsToSave);
     
     toast({
-      title: "Settings saved",
-      description: "Your preferences have been updated successfully.",
+      title: "Settings Saved",
+      description: "Your preferences have been updated successfully."
     });
   };
   
