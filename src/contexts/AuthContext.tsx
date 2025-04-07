@@ -130,7 +130,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigate("/login");
   };
   
-  // New function to update user profile
+  // Function to update user profile
   const updateProfile = (data: Partial<User>) => {
     if (user) {
       const updatedUser = { ...user, ...data };
@@ -139,7 +139,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
   
-  // New function to update user settings
+  // Function to update user settings
   const updateSettings = (settings: UserSettings) => {
     if (user) {
       const updatedUser = { 
