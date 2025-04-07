@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Shell, DashboardHeader, DashboardSidebar } from "@/components/layout/Shell";
@@ -21,16 +22,20 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Bell,
   Moon,
   Settings2,
-  Languages,
   KeyRound,
   Share2,
   FileEdit,
   LogOut,
-  Trash2
+  Trash2,
+  Save,
+  User,
+  Lock,
+  Sun
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
@@ -83,17 +88,17 @@ const Settings = () => {
         ...prevSettings,
         notifications: {
           ...prevSettings.notifications,
-          ...user.settings.notifications
+          ...(user.settings?.notifications || {})
         },
         appearance: {
           ...prevSettings.appearance,
-          ...user.settings.appearance
+          ...(user.settings?.appearance || {})
         },
         privacy: {
           ...prevSettings.privacy,
-          ...user.settings.privacy
+          ...(user.settings?.privacy || {})
         },
-        language: user.settings.language,
+        language: user.settings?.language || prevSettings.language,
       }));
     }
   }, [user]);
@@ -101,9 +106,19 @@ const Settings = () => {
   const handleChange = (category: keyof Omit<SettingsState, 'feedbackMessage'>, setting: string, value: boolean) => {
     setSettings(prev => {
       const updatedSettings = { ...prev };
-      if (category === 'notifications' || category === 'appearance' || category === 'privacy') {
-        updatedSettings[category] = {
-          ...updatedSettings[category],
+      if (category === 'notifications') {
+        updatedSettings.notifications = {
+          ...updatedSettings.notifications,
+          [setting]: value
+        };
+      } else if (category === 'appearance') {
+        updatedSettings.appearance = {
+          ...updatedSettings.appearance,
+          [setting]: value
+        };
+      } else if (category === 'privacy') {
+        updatedSettings.privacy = {
+          ...updatedSettings.privacy,
           [setting]: value
         };
       }
@@ -384,3 +399,4 @@ const Settings = () => {
 };
 
 export default Settings;
+

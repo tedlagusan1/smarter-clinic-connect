@@ -118,17 +118,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw new Error("Email already in use");
     }
     
-    // Create a new user
+    // Create a new user with empty settings
     const newUser = {
       id: String(users.length + 1),
       name,
       email,
       password,
       role: "user" as const,
+      // Initialize with empty settings object
       settings: {
         notifications: {
-          email: true,
-          appointment: true,
+          email: false,
+          appointment: false,
           reminders: false,
         },
         appearance: {
@@ -137,7 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         },
         privacy: {
           twoFactorAuth: false,
-          dataSharing: true,
+          dataSharing: false,
         },
         language: "English",
       }
