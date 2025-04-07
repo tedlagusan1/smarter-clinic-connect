@@ -14,6 +14,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import BookAppointment from "./pages/BookAppointment";
 import Appointments from "./pages/Appointments";
+import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminManageUsers from "./pages/AdminManageUsers";
 import AdminDoctorSchedules from "./pages/AdminDoctorSchedules";
@@ -56,6 +57,11 @@ const App = () => (
                 <Route path="/dashboard/appointments" element={
                   <ProtectedRoute>
                     <Appointments />
+                  </ProtectedRoute>
+                } />
+                <Route path="/dashboard/profile" element={
+                  <ProtectedRoute>
+                    <Profile />
                   </ProtectedRoute>
                 } />
                 

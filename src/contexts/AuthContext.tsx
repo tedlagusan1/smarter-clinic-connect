@@ -15,6 +15,7 @@ type AuthContextType = {
   logout: () => void;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  updateProfile: (data: Partial<User>) => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -78,12 +79,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigate("/login");
   };
   
+  // New function to update user profile
+  const updateProfile = (data: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...data };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+  
   return (
     <AuthContext.Provider 
       value={{ 
         user, 
         login, 
         logout,
+        updateProfile,
         isAuthenticated: !!user,
         isAdmin: user?.role === "admin"
       }}

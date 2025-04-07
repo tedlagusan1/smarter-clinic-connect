@@ -1,8 +1,8 @@
-
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { UserNotifications } from "@/components/UserNotifications";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ShellProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
@@ -63,6 +63,14 @@ export function SiteHeader() {
 }
 
 export function DashboardHeader() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+  
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+  
   return (
     <div className="container mx-auto px-4 h-16 flex items-center justify-between">
       <Link 
@@ -77,9 +85,12 @@ export function DashboardHeader() {
         <Link to="/dashboard/profile" className="text-sm font-medium transition-colors hover:text-primary">
           Profile
         </Link>
-        <Link to="/" className="text-sm font-medium transition-colors hover:text-primary">
+        <button 
+          onClick={handleLogout}
+          className="text-sm font-medium transition-colors hover:text-primary"
+        >
           Sign Out
-        </Link>
+        </button>
       </div>
     </div>
   );
@@ -106,6 +117,12 @@ export function DashboardSidebar() {
           className="px-4 py-2 rounded-md hover:bg-accent text-sm font-medium transition-colors"
         >
           Book Appointment
+        </Link>
+        <Link 
+          to="/dashboard/profile" 
+          className="px-4 py-2 rounded-md hover:bg-accent text-sm font-medium transition-colors"
+        >
+          Profile
         </Link>
         <div className="pt-4 pb-2">
           <div className="h-px w-full bg-border"></div>
