@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Shell, DashboardHeader, AdminSidebar } from "@/components/layout/Shell";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Mock data for appointments overview
 const appointmentsOverview = {
@@ -66,14 +66,6 @@ const recentAppointments = [
   }
 ];
 
-// Mock data for patient statistics
-const patientStats = {
-  totalPatients: 2578,
-  newThisMonth: 147,
-  activePatients: 1893,
-  averageAge: 42
-};
-
 // Mock data for doctor statistics
 const doctorStats = {
   total: 15,
@@ -83,6 +75,29 @@ const doctorStats = {
 };
 
 const AdminDashboard = () => {
+  // Get access to users data from AuthContext
+  const { getRegisteredUsers } = useAuth();
+  
+  // State for patient statistics
+  const [patientStats, setPatientStats] = useState({
+    totalPatients: 0,
+    newThisMonth: 147,
+    activePatients: 0,
+    averageAge: 42
+  });
+  
+  // Effect to update patient stats when component mounts
+  useEffect(() => {
+    const users = getRegisteredUsers();
+    if (users) {
+      setPatientStats({
+        ...patientStats,
+        totalPatients: users.length,
+        activePatients: users.filter(user => user.role === "user").length
+      });
+    }
+  }, [getRegisteredUsers]);
+
   return (
     <Shell 
       header={<DashboardHeader />} 

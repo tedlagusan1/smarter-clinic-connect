@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Shell, DashboardHeader, AdminSidebar } from "@/components/layout/Shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,65 +28,43 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
-// Mock data for users
-const usersData = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    status: "Active",
-    registeredDate: "2023-01-15",
-    appointmentsCount: 8
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    phone: "+1 (555) 987-6543",
-    status: "Active",
-    registeredDate: "2023-02-20",
-    appointmentsCount: 5
-  },
-  {
-    id: 3,
-    name: "Michael Johnson",
-    email: "michael.j@example.com",
-    phone: "+1 (555) 789-0123",
-    status: "Inactive",
-    registeredDate: "2023-01-05",
-    appointmentsCount: 2
-  },
-  {
-    id: 4,
-    name: "Emily Wilson",
-    email: "emily.w@example.com",
-    phone: "+1 (555) 456-7890",
-    status: "Active",
-    registeredDate: "2023-03-10",
-    appointmentsCount: 3
-  },
-  {
-    id: 5,
-    name: "Robert Brown",
-    email: "robert.b@example.com",
-    phone: "+1 (555) 234-5678",
-    status: "Active",
-    registeredDate: "2023-02-28",
-    appointmentsCount: 6
-  }
-];
+type UserDisplay = {
+  id: string | number;
+  name: string;
+  email: string;
+  phone: string;
+  status: string;
+  registeredDate: string;
+  appointmentsCount: number;
+};
 
 const AdminManageUsers = () => {
-  const [users, setUsers] = useState(usersData);
+  const { getRegisteredUsers } = useAuth();
+  const [users, setUsers] = useState<UserDisplay[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [userToEdit, setUserToEdit] = useState<any>(null);
+  const [userToEdit, setUserToEdit] = useState<UserDisplay | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<number | null>(null);
+  const [userToDelete, setUserToDelete] = useState<string | number | null>(null);
   
-  // Filter users based on search term
+  useEffect(() => {
+    const registeredUsers = getRegisteredUsers();
+    if (registeredUsers) {
+      const transformedUsers: UserDisplay[] = registeredUsers.map(user => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: "+1 (555) 000-0000",
+        status: "Active",
+        registeredDate: new Date().toISOString().split('T')[0],
+        appointmentsCount: 0
+      }));
+      setUsers(transformedUsers);
+    }
+  }, [getRegisteredUsers]);
+  
   const filteredUsers = users.filter(user => 
     user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -106,7 +83,7 @@ const AdminManageUsers = () => {
     toast.success("User status updated successfully");
   };
   
-  const handleEditUser = (user: any) => {
+  const handleEditUser = (user: UserDisplay) => {
     setUserToEdit({ ...user });
     setEditDialogOpen(true);
   };
@@ -252,7 +229,6 @@ const AdminManageUsers = () => {
           </CardContent>
         </Card>
         
-        {/* Edit User Dialog */}
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
           <DialogContent>
             <DialogHeader>
@@ -306,7 +282,6 @@ const AdminManageUsers = () => {
           </DialogContent>
         </Dialog>
         
-        {/* Delete User Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogContent>
             <DialogHeader>

@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -36,6 +35,7 @@ type AuthContextType = {
   isAdmin: boolean;
   updateProfile: (data: Partial<User>) => void;
   updateSettings: (settings: Partial<UserSettings>) => void;
+  getRegisteredUsers: () => Array<Omit<User, "password"> & {password?: string}> | null;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -243,6 +243,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
   
+  // Function to get all registered users (for admin purposes)
+  const getRegisteredUsers = () => {
+    return users.map(user => {
+      // Create a shallow copy without the password
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
+    });
+  };
+  
   return (
     <AuthContext.Provider 
       value={{ 
@@ -252,6 +261,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         registerUser,
         updateProfile,
         updateSettings,
+        getRegisteredUsers,
         isAuthenticated: !!user,
         isAdmin: user?.role === "admin"
       }}
