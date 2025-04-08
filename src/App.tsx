@@ -21,6 +21,7 @@ import AdminManageUsers from "./pages/AdminManageUsers";
 import AdminDoctorSchedules from "./pages/AdminDoctorSchedules";
 import AdminAppointments from "./pages/AdminAppointments";
 import AdminNotifications from "./pages/AdminNotifications";
+import AdminSettings from "./pages/AdminSettings";
 import Features from "./pages/Features";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -96,6 +97,11 @@ const App = () => {
                   <Route path="/admin/notifications" element={
                     <ProtectedRoute requireAdmin>
                       <AdminNotifications />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="/admin/settings" element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminSettings />
                     </ProtectedRoute>
                   } />
                   

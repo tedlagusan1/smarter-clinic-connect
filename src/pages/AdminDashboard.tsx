@@ -111,6 +111,10 @@ const AdminDashboard = () => {
             <Link to="/admin/appointments">
               <Button>Manage Appointments</Button>
             </Link>
+            <Button onClick={() => navigate('/admin/settings')}>
+              <Cog className="mr-2 h-4 w-4" />
+              Admin Settings
+            </Button>
           </div>
         </div>
         
