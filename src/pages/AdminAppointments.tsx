@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Shell, DashboardHeader, AdminSidebar } from "@/components/layout/Shell";
 import { Button } from "@/components/ui/button";
@@ -131,6 +130,22 @@ const AdminAppointments = () => {
     appointment.department.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
+  // Fixed type issues by adding proper type checks
+  const handleStatusToggle = (userId: string | number) => {
+    if (typeof userId === 'number') {
+      const updatedAppointments = upcomingAppointments.map(appointment => {
+        if (appointment.id === userId) {
+          const newStatus = appointment.status === "Active" ? "Inactive" : "Active";
+          return { ...appointment, status: newStatus };
+        }
+        return appointment;
+      });
+      
+      setUpcomingAppointments(updatedAppointments);
+      toast.success("Appointment status updated successfully");
+    }
+  };
+  
   const handleEditAppointment = (appointment: any) => {
     setAppointmentToEdit({ ...appointment });
     setEditAppointmentDialog(true);
@@ -212,7 +227,7 @@ const AdminAppointments = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Appointment Management</h1>
-          <Button>Create New Appointment</Button>
+          {/* Removed the "Create New Appointment" button as admins shouldn't book appointments */}
         </div>
         
         <div className="mb-6">

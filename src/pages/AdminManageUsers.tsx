@@ -70,7 +70,7 @@ const AdminManageUsers = () => {
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
-  const handleStatusToggle = (userId: number) => {
+  const handleStatusToggle = (userId: string | number) => {
     const updatedUsers = users.map(user => {
       if (user.id === userId) {
         const newStatus = user.status === "Active" ? "Inactive" : "Active";
@@ -103,7 +103,7 @@ const AdminManageUsers = () => {
     toast.success("User information updated successfully");
   };
   
-  const handleDeleteUser = (userId: number) => {
+  const handleDeleteUser = (userId: string | number) => {
     setUserToDelete(userId);
     setDeleteDialogOpen(true);
   };
