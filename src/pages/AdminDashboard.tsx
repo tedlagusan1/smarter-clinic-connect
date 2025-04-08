@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Shell, DashboardHeader, AdminSidebar } from "@/components/layout/Shell";
 import { Button } from "@/components/ui/button";
 import { 
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
+import { Settings } from "lucide-react";
 
 // Mock data for appointments overview
 const appointmentsOverview = {
@@ -77,6 +79,7 @@ const doctorStats = {
 const AdminDashboard = () => {
   // Get access to users data from AuthContext
   const { getRegisteredUsers } = useAuth();
+  const navigate = useNavigate();
   
   // State for patient statistics
   const [patientStats, setPatientStats] = useState({
@@ -112,7 +115,7 @@ const AdminDashboard = () => {
               <Button>Manage Appointments</Button>
             </Link>
             <Button onClick={() => navigate('/admin/settings')}>
-              <Cog className="mr-2 h-4 w-4" />
+              <Settings className="mr-2 h-4 w-4" />
               Admin Settings
             </Button>
           </div>
