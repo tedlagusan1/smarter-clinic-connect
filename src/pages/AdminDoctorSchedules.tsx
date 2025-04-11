@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Shell, DashboardHeader, AdminSidebar } from "@/components/layout/Shell";
 import { Button } from "@/components/ui/button";
@@ -83,13 +82,6 @@ const AdminDoctorSchedules = () => {
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [editScheduleDialog, setEditScheduleDialog] = useState(false);
   const [scheduleToEdit, setScheduleToEdit] = useState<any>(null);
-  const [addScheduleDialog, setAddScheduleDialog] = useState(false);
-  const [newSchedule, setNewSchedule] = useState({
-    day: "Monday",
-    startTime: "09:00",
-    endTime: "17:00",
-    status: "Available"
-  });
   
   const selectDoctor = (doctor: any) => {
     setSelectedDoctor(doctor);
@@ -149,51 +141,6 @@ const AdminDoctorSchedules = () => {
     toast.success("Schedule removed successfully");
   };
   
-  const handleAddSchedule = () => {
-    if (!selectedDoctor) return;
-    
-    // Check if already scheduled for this day
-    const alreadyScheduled = selectedDoctor.schedules.some(
-      (schedule: any) => schedule.day === newSchedule.day
-    );
-    
-    if (alreadyScheduled) {
-      toast.error(`Already scheduled for ${newSchedule.day}`);
-      return;
-    }
-    
-    const newId = Math.max(...selectedDoctor.schedules.map((s: any) => s.id), 0) + 1;
-    
-    const updatedDoctors = doctors.map(doctor => {
-      if (doctor.id === selectedDoctor.id) {
-        const updatedSchedules = [
-          ...doctor.schedules,
-          { id: newId, ...newSchedule }
-        ];
-        return { ...doctor, schedules: updatedSchedules };
-      }
-      return doctor;
-    });
-    
-    setDoctors(updatedDoctors);
-    
-    // Update the selected doctor reference
-    const updatedDoctor = updatedDoctors.find(d => d.id === selectedDoctor.id);
-    if (updatedDoctor) {
-      setSelectedDoctor(updatedDoctor);
-    }
-    
-    setAddScheduleDialog(false);
-    setNewSchedule({
-      day: "Monday",
-      startTime: "09:00",
-      endTime: "17:00",
-      status: "Available"
-    });
-    
-    toast.success("Schedule added successfully");
-  };
-  
   return (
     <Shell
       header={<DashboardHeader />}
@@ -243,8 +190,8 @@ const AdminDoctorSchedules = () => {
               </CardTitle>
               <CardDescription>
                 {selectedDoctor 
-                  ? `Manage availability and working hours for ${selectedDoctor.name}`
-                  : 'Select a doctor to view and manage their schedule'}
+                  ? `View working hours for ${selectedDoctor.name}. Users can book available slots.`
+                  : 'Select a doctor to view their schedule'}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -252,12 +199,6 @@ const AdminDoctorSchedules = () => {
                 <>
                   <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-medium">{selectedDoctor.specialty}</h3>
-                    <Button 
-                      onClick={() => setAddScheduleDialog(true)}
-                      disabled={selectedDoctor.schedules.length >= 7}
-                    >
-                      Add Schedule
-                    </Button>
                   </div>
                   
                   {selectedDoctor.schedules.length > 0 ? (
@@ -311,18 +252,13 @@ const AdminDoctorSchedules = () => {
                     </div>
                   ) : (
                     <div className="text-center py-8">
-                      <p className="text-muted-foreground mb-4">No schedules set for this doctor</p>
-                      <Button 
-                        onClick={() => setAddScheduleDialog(true)}
-                      >
-                        Add First Schedule
-                      </Button>
+                      <p className="text-muted-foreground">No schedules set for this doctor</p>
                     </div>
                   )}
                 </>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-muted-foreground">Select a doctor from the list to view and manage their schedule</p>
+                  <p className="text-muted-foreground">Select a doctor from the list to view their schedule</p>
                 </div>
               )}
             </CardContent>
@@ -391,77 +327,6 @@ const AdminDoctorSchedules = () => {
               </Button>
               <Button onClick={saveScheduleChanges}>
                 Save Changes
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        
-        {/* Add Schedule Dialog */}
-        <Dialog open={addScheduleDialog} onOpenChange={setAddScheduleDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Schedule</DialogTitle>
-              <DialogDescription>
-                Add a new working day for {selectedDoctor?.name}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="new-day">Day</Label>
-                <select
-                  id="new-day"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  value={newSchedule.day}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, day: e.target.value })}
-                >
-                  {weekdays.map(day => (
-                    <option 
-                      key={day} 
-                      value={day}
-                      disabled={selectedDoctor?.schedules.some((s: any) => s.day === day)}
-                    >
-                      {day} {selectedDoctor?.schedules.some((s: any) => s.day === day) ? '(Already Scheduled)' : ''}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-start-time">Start Time</Label>
-                <Input
-                  id="new-start-time"
-                  type="time"
-                  value={newSchedule.startTime}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, startTime: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-end-time">End Time</Label>
-                <Input
-                  id="new-end-time"
-                  type="time"
-                  value={newSchedule.endTime}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, endTime: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-status">Status</Label>
-                <select
-                  id="new-status"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  value={newSchedule.status}
-                  onChange={(e) => setNewSchedule({ ...newSchedule, status: e.target.value })}
-                >
-                  <option value="Available">Available</option>
-                  <option value="Unavailable">Unavailable</option>
-                </select>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setAddScheduleDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleAddSchedule}>
-                Add Schedule
               </Button>
             </DialogFooter>
           </DialogContent>
