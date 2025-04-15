@@ -31,24 +31,40 @@ export function Shell({
       {header && <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">{header}</header>}
       <div className="flex flex-1">
         {sidebar && (
-          <aside className={`lg:block border-r transition-all duration-300 ${sidebarCollapsed ? "w-16" : "w-64"} hidden`}>
-            <div className="flex justify-end p-2">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={toggleSidebar} 
-                className="h-8 w-8"
-              >
-                {sidebarCollapsed ? <Maximize className="h-4 w-4" /> : <Minimize className="h-4 w-4" />}
-                <span className="sr-only">
-                  {sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-                </span>
-              </Button>
-            </div>
-            <div className={sidebarCollapsed ? "hidden" : "overflow-auto"}>
-              {sidebar}
-            </div>
-          </aside>
+          <>
+            {sidebarCollapsed ? (
+              <aside className="lg:block hidden w-12 border-r transition-all duration-300">
+                <div className="flex justify-center p-2">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={toggleSidebar} 
+                    className="h-8 w-8"
+                  >
+                    <Maximize className="h-4 w-4" />
+                    <span className="sr-only">Expand sidebar</span>
+                  </Button>
+                </div>
+              </aside>
+            ) : (
+              <aside className="lg:block hidden w-64 border-r transition-all duration-300">
+                <div className="flex justify-end p-2">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={toggleSidebar} 
+                    className="h-8 w-8"
+                  >
+                    <Minimize className="h-4 w-4" />
+                    <span className="sr-only">Collapse sidebar</span>
+                  </Button>
+                </div>
+                <div className="overflow-auto">
+                  {sidebar}
+                </div>
+              </aside>
+            )}
+          </>
         )}
         <main className={cn("flex-1 overflow-auto", className)} {...props}>
           {children}
