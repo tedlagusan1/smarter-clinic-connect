@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -30,7 +31,7 @@ export function Shell({
       {header && <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">{header}</header>}
       <div className="flex flex-1">
         {sidebar && (
-          <aside className={`lg:block border-r overflow-auto transition-all duration-300 ${sidebarCollapsed ? "w-16" : "w-64"} hidden`}>
+          <aside className={`lg:block border-r transition-all duration-300 ${sidebarCollapsed ? "w-16" : "w-64"} hidden`}>
             <div className="flex justify-end p-2">
               <Button 
                 variant="ghost" 
@@ -44,7 +45,7 @@ export function Shell({
                 </span>
               </Button>
             </div>
-            <div className={sidebarCollapsed ? "px-2" : ""}>
+            <div className={sidebarCollapsed ? "hidden" : "overflow-auto"}>
               {sidebar}
             </div>
           </aside>
