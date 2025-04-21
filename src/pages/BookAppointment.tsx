@@ -195,9 +195,9 @@ const BookAppointment = () => {
     const doctorName = selectedDoctor?.name || "";
     const location = selectedDoctor ? `${selectedDoctor.specialty} Office` : "Clinic";
     try {
-      // Write appointment to supabase
+      // Write appointment to supabase - FIX: Pass user.id directly as a string
       const { error } = await supabase.from("appointments").insert({
-        user_id: user.id,
+        user_id: user.id, // This ensures we're passing the UUID as a string
         doctor_name: doctorName,
         specialty,
         date: formattedDate,
