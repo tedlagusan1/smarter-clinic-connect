@@ -14,41 +14,9 @@ import {
 const Dashboard = () => {
   const navigate = useNavigate();
   
-  // Mock data for upcoming appointments
-  const upcomingAppointments = [
-    {
-      id: 1,
-      doctor: "Dr. Sarah Johnson",
-      specialty: "General Practitioner",
-      date: "2023-06-15",
-      time: "10:00 AM",
-      status: "Confirmed"
-    },
-    {
-      id: 2,
-      doctor: "Dr. Michael Chen",
-      specialty: "Cardiologist",
-      date: "2023-06-20",
-      time: "2:30 PM",
-      status: "Pending"
-    }
-  ];
-  
-  // Mock data for health reminders
-  const healthReminders = [
-    {
-      id: 1,
-      title: "Annual Physical Checkup",
-      description: "It's time for your annual physical examination",
-      dueDate: "2023-07-10"
-    },
-    {
-      id: 2,
-      title: "Vaccination Reminder",
-      description: "Your flu vaccination is due soon",
-      dueDate: "2023-06-30"
-    }
-  ];
+  // Empty state for new users
+  const upcomingAppointments = [];
+  const healthReminders = [];
   
   return (
     <Shell 
@@ -77,7 +45,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">{upcomingAppointments.length}</div>
               <p className="text-xs text-muted-foreground">
-                Next: {upcomingAppointments[0]?.date} at {upcomingAppointments[0]?.time}
+                {upcomingAppointments.length > 0 ? `Next: ${upcomingAppointments[0]?.date} at ${upcomingAppointments[0]?.time}` : "No upcoming appointments"}
               </p>
             </CardContent>
           </Card>
@@ -91,7 +59,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">{healthReminders.length}</div>
               <p className="text-xs text-muted-foreground">
-                Next: {healthReminders[0]?.title} by {healthReminders[0]?.dueDate}
+                {healthReminders.length > 0 ? `Next: ${healthReminders[0]?.title} by ${healthReminders[0]?.dueDate}` : "No health reminders"}
               </p>
             </CardContent>
           </Card>
@@ -103,9 +71,9 @@ const Dashboard = () => {
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">12</div>
+              <div className="text-2xl font-bold">0</div>
               <p className="text-xs text-muted-foreground">
-                Last: 2023-05-28
+                No past appointments
               </p>
             </CardContent>
           </Card>
@@ -117,9 +85,9 @@ const Dashboard = () => {
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">3</div>
+              <div className="text-2xl font-bold">0</div>
               <p className="text-xs text-muted-foreground">
-                Active prescriptions
+                No active prescriptions
               </p>
             </CardContent>
           </Card>
@@ -138,34 +106,7 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground">No upcoming appointments</p>
               ) : (
                 <div className="space-y-4">
-                  {upcomingAppointments.map((appointment) => (
-                    <div key={appointment.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div>
-                        <h3 className="font-medium">{appointment.doctor}</h3>
-                        <p className="text-sm text-muted-foreground">{appointment.specialty}</p>
-                        <p className="text-sm">
-                          {appointment.date} at {appointment.time}
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <span className={`
-                          inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
-                          ${appointment.status === 'Confirmed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}
-                        `}>
-                          {appointment.status}
-                        </span>
-                        <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => navigate("/dashboard/appointments")}
-                          >
-                            Manage
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  {/* If you add logic later to map over appointments, it will appear here */}
                 </div>
               )}
             </CardContent>
@@ -183,19 +124,7 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground">No health reminders</p>
               ) : (
                 <div className="space-y-4">
-                  {healthReminders.map((reminder) => (
-                    <div key={reminder.id} className="p-4 border rounded-lg">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-medium">{reminder.title}</h3>
-                        <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
-                          Due: {reminder.dueDate}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {reminder.description}
-                      </p>
-                    </div>
-                  ))}
+                  {/* If you add logic later to map over reminders, it will appear here */}
                 </div>
               )}
             </CardContent>
@@ -207,3 +136,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+
