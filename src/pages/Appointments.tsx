@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Shell, DashboardHeader, DashboardSidebar } from "@/components/layout/Shell";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,6 @@ import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 
-// Mock data for upcoming appointments
 const upcomingAppointmentsData = [
   {
     id: 1,
@@ -47,7 +45,6 @@ const upcomingAppointmentsData = [
   }
 ];
 
-// Mock data for past appointments
 const pastAppointmentsData = [
   {
     id: 101,
@@ -99,7 +96,6 @@ const Appointments = () => {
       return;
     }
     
-    // Update the appointment status to Cancelled
     const updatedAppointments = upcomingAppointments.map(appointment => {
       if (appointment.id === appointmentToCancel) {
         return { ...appointment, status: "Cancelled" };
@@ -107,7 +103,6 @@ const Appointments = () => {
       return appointment;
     });
     
-    // Move the cancelled appointment to past appointments
     const cancelledAppointment = upcomingAppointments.find(appointment => appointment.id === appointmentToCancel);
     if (cancelledAppointment) {
       setPastAppointments([
@@ -115,7 +110,6 @@ const Appointments = () => {
         ...pastAppointments
       ]);
       
-      // Remove from upcoming appointments
       setUpcomingAppointments(upcomingAppointments.filter(appointment => appointment.id !== appointmentToCancel));
     }
     
@@ -139,7 +133,6 @@ const Appointments = () => {
       return;
     }
     
-    // Here we would typically send the reschedule request to the backend
     toast({
       title: "Success",
       description: "Reschedule request sent successfully"
@@ -183,14 +176,19 @@ const Appointments = () => {
           <TabsContent value="upcoming" className="mt-6">
             {upcomingAppointments.length === 0 ? (
               <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center py-6">
-                    <h3 className="text-lg font-medium mb-2">No upcoming appointments</h3>
-                    <p className="text-muted-foreground mb-4">You don't have any scheduled appointments.</p>
-                    <Button onClick={() => navigate("/dashboard/book")}>
-                      Book an Appointment
-                    </Button>
-                  </div>
+                <CardContent className="pt-8 pb-8 flex flex-col items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="mb-3 text-slate-400" width="56" height="56" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <rect width="24" height="24" rx="6" fill="#f1f5f9" />
+                    <path stroke="#94a3b8" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    <text x="7" y="18" fontSize="7" fill="#cbd5e1">No Appointments</text>
+                  </svg>
+                  <h3 className="text-lg font-semibold mb-1 text-slate-700">No appointments yet</h3>
+                  <p className="mb-4 text-sm text-muted-foreground text-center max-w-xs">
+                    Looks like you haven't booked any appointments. When you book your first appointment, it will appear here.
+                  </p>
+                  <Button onClick={() => navigate("/dashboard/book")} size="lg">
+                    Book your first appointment
+                  </Button>
                 </CardContent>
               </Card>
             ) : (
