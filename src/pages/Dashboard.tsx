@@ -11,9 +11,11 @@ import {
   CardTitle 
 } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   // Fetch appointments from Supabase
   const [appointments, setAppointments] = useState([]);
@@ -25,27 +27,33 @@ const Dashboard = () => {
 
   useEffect(() => {
     async function fetchAppointments() {
+      if (!user) return;
+      
       setLoading(true);
       const today = new Date();
       const yyyyMMdd = today.toISOString().slice(0, 10);
+      
       // Fetch all user's appointments
       const { data, error } = await supabase
         .from("appointments")
         .select("*")
         .order("date", { ascending: true })
         .order("time", { ascending: true });
+        
       if (!error) {
         setAppointments(data || []);
         // Separate logic for upcoming
         setUpcomingAppointments((data || []).filter(a => a.date >= yyyyMMdd));
       } else {
+        console.error("Error fetching appointments:", error);
         setAppointments([]);
         setUpcomingAppointments([]);
       }
       setLoading(false);
     }
+    
     fetchAppointments();
-  }, []);
+  }, [user]);
 
   return (
     <Shell 

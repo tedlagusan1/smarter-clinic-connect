@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Shell, DashboardHeader, DashboardSidebar } from "@/components/layout/Shell";
 import { format } from "date-fns";
@@ -30,6 +31,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Mock data for doctors
 const doctors = [
@@ -92,6 +94,7 @@ interface BookedAppointment {
 
 const BookAppointment = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [specialty, setSpecialty] = useState("");
   const [doctorId, setDoctorId] = useState("");
   const [date, setDate] = useState<Date>();
@@ -180,6 +183,12 @@ const BookAppointment = () => {
       return;
     }
     
+    if (!user) {
+      toast.error("You must be logged in to book an appointment");
+      navigate("/login");
+      return;
+    }
+    
     setIsBooking(true);
     
     const formattedDate = format(date, "yyyy-MM-dd");
@@ -188,16 +197,18 @@ const BookAppointment = () => {
     try {
       // Write appointment to supabase
       const { error } = await supabase.from("appointments").insert({
+        user_id: user.id,
         doctor_name: doctorName,
         specialty,
         date: formattedDate,
         time,
         location,
         status: "Confirmed",
-      }); // user_id is set by RLS/auth
+      });
       
       if (error) {
         toast.error("Failed to book appointment. Please try again.");
+        console.error("Booking error:", error);
         setIsBooking(false);
         return;
       }
@@ -208,6 +219,7 @@ const BookAppointment = () => {
       }, 1500);
     } catch (err) {
       toast.error("Unexpected error booking appointment");
+      console.error("Unexpected booking error:", err);
     } finally {
       setIsBooking(false);
     }
