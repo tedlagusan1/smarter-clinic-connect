@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Shell, DashboardHeader, DashboardSidebar } from "@/components/layout/Shell";
 import { Button } from "@/components/ui/button";
@@ -10,14 +10,43 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  
-  // Empty state for new users
-  const upcomingAppointments = [];
-  const healthReminders = [];
-  
+
+  // Fetch appointments from Supabase
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Separate logical metrics
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
+  const [healthReminders] = useState([]); // Still empty for now
+
+  useEffect(() => {
+    async function fetchAppointments() {
+      setLoading(true);
+      const today = new Date();
+      const yyyyMMdd = today.toISOString().slice(0, 10);
+      // Fetch all user's appointments
+      const { data, error } = await supabase
+        .from("appointments")
+        .select("*")
+        .order("date", { ascending: true })
+        .order("time", { ascending: true });
+      if (!error) {
+        setAppointments(data || []);
+        // Separate logic for upcoming
+        setUpcomingAppointments((data || []).filter(a => a.date >= yyyyMMdd));
+      } else {
+        setAppointments([]);
+        setUpcomingAppointments([]);
+      }
+      setLoading(false);
+    }
+    fetchAppointments();
+  }, []);
+
   return (
     <Shell 
       header={<DashboardHeader />} 
@@ -33,7 +62,7 @@ const Dashboard = () => {
             </Button>
           </div>
         </div>
-        
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="animate-fade-in">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -43,9 +72,13 @@ const Dashboard = () => {
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{upcomingAppointments.length}</div>
+              <div className="text-2xl font-bold">{loading ? "-" : upcomingAppointments.length}</div>
               <p className="text-xs text-muted-foreground">
-                {upcomingAppointments.length > 0 ? `Next: ${upcomingAppointments[0]?.date} at ${upcomingAppointments[0]?.time}` : "No upcoming appointments"}
+                {loading ? "Loading..." : (
+                  upcomingAppointments.length > 0
+                    ? `Next: ${upcomingAppointments[0]?.date} at ${upcomingAppointments[0]?.time}`
+                    : "No upcoming appointments"
+                )}
               </p>
             </CardContent>
           </Card>
@@ -59,7 +92,7 @@ const Dashboard = () => {
             <CardContent>
               <div className="text-2xl font-bold">{healthReminders.length}</div>
               <p className="text-xs text-muted-foreground">
-                {healthReminders.length > 0 ? `Next: ${healthReminders[0]?.title} by ${healthReminders[0]?.dueDate}` : "No health reminders"}
+                No health reminders
               </p>
             </CardContent>
           </Card>
@@ -71,9 +104,15 @@ const Dashboard = () => {
               </svg>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">
+                {loading ? "-" : appointments.filter(a => a.date < new Date().toISOString().slice(0,10)).length}
+              </div>
               <p className="text-xs text-muted-foreground">
-                No past appointments
+                {loading
+                  ? "Loading..."
+                  : appointments.filter(a => a.date < new Date().toISOString().slice(0,10)).length === 0
+                  ? "No past appointments"
+                  : ""}
               </p>
             </CardContent>
           </Card>
@@ -92,7 +131,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
-        
+
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           <Card className="animate-fade-in delay-400">
             <CardHeader>
@@ -102,16 +141,24 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {upcomingAppointments.length === 0 ? (
+              {loading ? (
+                <p className="text-sm text-muted-foreground">Loading...</p>
+              ) : upcomingAppointments.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No upcoming appointments</p>
               ) : (
                 <div className="space-y-4">
-                  {/* If you add logic later to map over appointments, it will appear here */}
+                  {upcomingAppointments.map(a => (
+                    <div key={a.id} className="p-3 border rounded-lg">
+                      <div className="font-semibold">{a.doctor_name}</div>
+                      <div className="text-sm text-muted-foreground">{a.specialty}</div>
+                      <div className="text-sm">{a.date} at {a.time}</div>
+                      <div className="text-xs">{a.location}</div>
+                    </div>
+                  ))}
                 </div>
               )}
             </CardContent>
           </Card>
-          
           <Card className="animate-fade-in delay-500">
             <CardHeader>
               <CardTitle>Health Reminders</CardTitle>
@@ -120,13 +167,7 @@ const Dashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {healthReminders.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No health reminders</p>
-              ) : (
-                <div className="space-y-4">
-                  {/* If you add logic later to map over reminders, it will appear here */}
-                </div>
-              )}
+              <p className="text-sm text-muted-foreground">No health reminders</p>
             </CardContent>
           </Card>
         </div>
@@ -136,4 +177,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Shell, DashboardHeader, DashboardSidebar } from "@/components/layout/Shell";
 import { format } from "date-fns";
@@ -30,6 +29,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 // Mock data for doctors
 const doctors = [
@@ -98,15 +98,28 @@ const BookAppointment = () => {
   const [time, setTime] = useState("");
   const [reason, setReason] = useState("");
   const [step, setStep] = useState(1);
-  const [bookedAppointments, setBookedAppointments] = useState<BookedAppointment[]>([]);
   
-  // Load booked appointments from localStorage on component mount
+  // New: Track loading state when booking appointment
+  const [isBooking, setIsBooking] = useState(false);
+  
+  // For checking booked slots, load existing bookings from Supabase
+  const [bookedAppointments, setBookedAppointments] = useState<any[]>([]);
   useEffect(() => {
-    const storedAppointments = localStorage.getItem("bookedAppointments");
-    if (storedAppointments) {
-      setBookedAppointments(JSON.parse(storedAppointments));
+    async function fetchAppointments() {
+      if (!doctorId || !date) return;
+      // To check for slot conflicts, fetch all appointments for the same doctor/date
+      const formattedDate = format(date, "yyyy-MM-dd");
+      const { data } = await supabase
+        .from("appointments")
+        .select("doctor_name, date, time")
+        .eq("doctor_name", selectedDoctor?.name || "")
+        .eq("date", formattedDate);
+      setBookedAppointments(data || []);
     }
-  }, []);
+    fetchAppointments();
+    // Only re-fetch when doctor/date change, not every render
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [doctorId, date]);
   
   // List of available specialties from our doctor data
   const specialties = [...new Set(doctors.map(doctor => doctor.specialty))];
@@ -132,6 +145,9 @@ const BookAppointment = () => {
     return selectedDoctor.availableDays.includes(dayOfWeek);
   };
   
+  // --- isDateAvailable and isTimeSlotBooked now consider Supabase appointments ---
+  // Main change is retrieving booked slots from Supabase
+  
   // Check if a time slot is already booked for selected doctor and date
   const isTimeSlotBooked = (time: string) => {
     if (!date || !doctorId) return false;
@@ -139,7 +155,7 @@ const BookAppointment = () => {
     const formattedDate = format(date, "yyyy-MM-dd");
     return bookedAppointments.some(
       appointment => 
-        appointment.doctorId === parseInt(doctorId) && 
+        appointment.doctor_name === selectedDoctor?.name && 
         appointment.date === formattedDate && 
         appointment.time === time
     );
@@ -150,52 +166,51 @@ const BookAppointment = () => {
     return timeSlots.filter(slot => !isTimeSlotBooked(slot));
   };
   
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Handle form submission: Book on Supabase
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     
     if (!specialty || !doctorId || !date || !time || !reason) {
       toast.error("Please fill out all fields");
       return;
     }
     
-    const formattedDate = format(date, "yyyy-MM-dd");
-    
-    // Check if appointment is already booked
     if (isTimeSlotBooked(time)) {
       toast.error("This time slot is no longer available. Please choose another time.");
       return;
     }
     
-    // Add the new appointment to booked appointments
-    const newBookedAppointments = [
-      ...bookedAppointments,
-      {
-        doctorId: parseInt(doctorId),
+    setIsBooking(true);
+    
+    const formattedDate = format(date, "yyyy-MM-dd");
+    const doctorName = selectedDoctor?.name || "";
+    const location = selectedDoctor ? `${selectedDoctor.specialty} Office` : "Clinic";
+    try {
+      // Write appointment to supabase
+      const { error } = await supabase.from("appointments").insert({
+        doctor_name: doctorName,
+        specialty,
         date: formattedDate,
-        time
+        time,
+        location,
+        status: "Confirmed",
+      }); // user_id is set by RLS/auth
+      
+      if (error) {
+        toast.error("Failed to book appointment. Please try again.");
+        setIsBooking(false);
+        return;
       }
-    ];
-    
-    // Save to localStorage
-    localStorage.setItem("bookedAppointments", JSON.stringify(newBookedAppointments));
-    setBookedAppointments(newBookedAppointments);
-    
-    // Here we would normally submit the appointment data to a server
-    toast.success("Appointment booked successfully!");
-    console.log({
-      specialty,
-      doctorId,
-      doctorName: selectedDoctor?.name,
-      date: formattedDate,
-      time,
-      reason
-    });
-    
-    // Navigate to dashboard after booking
-    setTimeout(() => {
-      navigate("/dashboard");
-    }, 2000);
+      
+      toast.success("Appointment booked successfully!");
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1500);
+    } catch (err) {
+      toast.error("Unexpected error booking appointment");
+    } finally {
+      setIsBooking(false);
+    }
   };
   
   const nextStep = () => {
@@ -444,8 +459,8 @@ const BookAppointment = () => {
                   Continue
                 </Button>
               ) : (
-                <Button onClick={handleSubmit}>
-                  Confirm Booking
+                <Button onClick={handleSubmit} disabled={isBooking}>
+                  {isBooking ? "Booking..." : "Confirm Booking"}
                 </Button>
               )}
             </CardFooter>
