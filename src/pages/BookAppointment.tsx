@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Shell, DashboardHeader, DashboardSidebar } from "@/components/layout/Shell";
 import { format } from "date-fns";
@@ -12,17 +11,23 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { doctors, timeSlots } from "@/components/appointments/doctors";
 import { DoctorSelection } from "@/components/appointments/DoctorSelection";
 import { AppointmentDatePicker } from "@/components/appointments/AppointmentDatePicker";
 import { TimeSlotSelection } from "@/components/appointments/TimeSlotSelection";
 import { AppointmentConfirmation } from "@/components/appointments/AppointmentConfirmation";
+import { StepIndicator } from "@/components/appointments/StepIndicator";
+import { useAppointmentBooking } from "@/hooks/useAppointmentBooking";
+import { supabase } from "@/integrations/supabase/client";
+
+const STEPS = [
+  { title: "Select Doctor", description: "Select a medical specialty and choose a doctor" },
+  { title: "Choose Date & Time", description: "Select an available date and time for your appointment" },
+  { title: "Confirm Details", description: "Review and confirm your appointment details" },
+];
 
 const BookAppointment = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [specialty, setSpecialty] = useState("");
   const [doctorId, setDoctorId] = useState("");
@@ -30,9 +35,9 @@ const BookAppointment = () => {
   const [time, setTime] = useState("");
   const [reason, setReason] = useState("");
   const [step, setStep] = useState(1);
-  const [isBooking, setIsBooking] = useState(false);
   const [bookedAppointments, setBookedAppointments] = useState<any[]>([]);
-  const [bookingError, setBookingError] = useState<string | null>(null);
+
+  const { isBooking, bookingError, bookAppointment } = useAppointmentBooking();
 
   useEffect(() => {
     async function fetchAppointments() {
@@ -100,58 +105,6 @@ const BookAppointment = () => {
     return true;
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    
-    setBookingError(null);
-    
-    if (!validateInputs()) return;
-
-    setIsBooking(true);
-
-    try {
-      // Ensure user.id is treated as a string
-      const userId = user?.id?.toString();
-      console.log("Booking appointment with user ID:", userId);
-      console.log("Appointment details:", {
-        doctor: selectedDoctor?.name,
-        specialty,
-        date: date ? format(date, "yyyy-MM-dd") : "",
-        time,
-        reason
-      });
-      
-      const { data, error } = await supabase.from("appointments").insert({
-        user_id: userId,
-        doctor_name: selectedDoctor?.name || "",
-        specialty,
-        date: format(date!, "yyyy-MM-dd"),
-        time,
-        location: selectedDoctor ? `${selectedDoctor.specialty} Office` : "Clinic",
-        status: "Confirmed",
-      }).select();
-
-      if (error) {
-        console.error("Booking error:", error);
-        setBookingError("Failed to book appointment. Please try again.");
-        toast.error("Failed to book appointment. Please try again.");
-        return;
-      }
-
-      console.log("Appointment booked successfully:", data);
-      toast.success("Appointment booked successfully!");
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1500);
-    } catch (err) {
-      console.error("Unexpected booking error:", err);
-      setBookingError("Unexpected error booking appointment");
-      toast.error("Unexpected error booking appointment");
-    } finally {
-      setIsBooking(false);
-    }
-  };
-
   const nextStep = () => {
     if (step === 1 && (!specialty || !doctorId)) {
       toast.error("Please select a specialty and doctor");
@@ -168,6 +121,21 @@ const BookAppointment = () => {
     setStep(step - 1);
   };
 
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    await bookAppointment({
+      specialty,
+      doctorId,
+      date,
+      time,
+      reason,
+      userId: user?.id?.toString(),
+      selectedDoctorName: selectedDoctor?.name,
+      selectedDoctorSpecialty: selectedDoctor?.specialty,
+    });
+  };
+
   return (
     <Shell
       header={<DashboardHeader />}
@@ -178,53 +146,15 @@ const BookAppointment = () => {
         <div className="max-w-3xl mx-auto animate-fade-in">
           <h1 className="text-3xl font-bold mb-6">Book an Appointment</h1>
 
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex space-x-4">
-                {[1, 2, 3].map((stepNumber) => (
-                  <React.Fragment key={stepNumber}>
-                    <div
-                      className={`flex items-center justify-center w-8 h-8 rounded-full ${
-                        step >= stepNumber ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'
-                      }`}
-                    >
-                      {stepNumber}
-                    </div>
-                    {stepNumber < 3 && (
-                      <div
-                        className={`w-16 h-1 ${
-                          step > stepNumber ? 'bg-primary' : 'bg-muted'
-                        }`}
-                      ></div>
-                    )}
-                  </React.Fragment>
-                ))}
-              </div>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className={step >= 1 ? 'text-primary font-medium' : 'text-muted-foreground'}>
-                Select Doctor
-              </span>
-              <span className={step >= 2 ? 'text-primary font-medium' : 'text-muted-foreground'}>
-                Choose Date & Time
-              </span>
-              <span className={step >= 3 ? 'text-primary font-medium' : 'text-muted-foreground'}>
-                Confirm Details
-              </span>
-            </div>
-          </div>
+          <StepIndicator currentStep={step} steps={STEPS} />
 
           <Card>
             <CardHeader>
               <CardTitle>
-                {step === 1 && "Select a Doctor"}
-                {step === 2 && "Choose Date & Time"}
-                {step === 3 && "Confirm Appointment Details"}
+                {STEPS[step - 1].title}
               </CardTitle>
               <CardDescription>
-                {step === 1 && "Select a medical specialty and choose a doctor"}
-                {step === 2 && "Select an available date and time for your appointment"}
-                {step === 3 && "Review and confirm your appointment details"}
+                {STEPS[step - 1].description}
               </CardDescription>
             </CardHeader>
             <CardContent>
