@@ -32,6 +32,7 @@ const BookAppointment = () => {
   const [step, setStep] = useState(1);
   const [isBooking, setIsBooking] = useState(false);
   const [bookedAppointments, setBookedAppointments] = useState<any[]>([]);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchAppointments() {
@@ -79,54 +80,73 @@ const BookAppointment = () => {
     return timeSlots.filter(slot => !isTimeSlotBooked(slot));
   };
 
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-
+  const validateInputs = () => {
     if (!specialty || !doctorId || !date || !time || !reason) {
       toast.error("Please fill out all fields");
-      return;
+      return false;
     }
 
     if (isTimeSlotBooked(time)) {
       toast.error("This time slot is no longer available. Please choose another time.");
-      return;
+      return false;
     }
 
     if (!user) {
       toast.error("You must be logged in to book an appointment");
       navigate("/login");
-      return;
+      return false;
     }
+
+    return true;
+  };
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    setBookingError(null);
+    
+    if (!validateInputs()) return;
 
     setIsBooking(true);
 
     try {
-      const userId = user.id;
-      console.log("Booking with user ID:", userId);
+      // Ensure user.id is treated as a string
+      const userId = user?.id?.toString();
+      console.log("Booking appointment with user ID:", userId);
+      console.log("Appointment details:", {
+        doctor: selectedDoctor?.name,
+        specialty,
+        date: date ? format(date, "yyyy-MM-dd") : "",
+        time,
+        reason
+      });
       
-      const { error } = await supabase.from("appointments").insert({
+      const { data, error } = await supabase.from("appointments").insert({
         user_id: userId,
         doctor_name: selectedDoctor?.name || "",
         specialty,
-        date: format(date, "yyyy-MM-dd"),
+        date: format(date!, "yyyy-MM-dd"),
         time,
         location: selectedDoctor ? `${selectedDoctor.specialty} Office` : "Clinic",
         status: "Confirmed",
-      });
+      }).select();
 
       if (error) {
-        toast.error("Failed to book appointment. Please try again.");
         console.error("Booking error:", error);
+        setBookingError("Failed to book appointment. Please try again.");
+        toast.error("Failed to book appointment. Please try again.");
         return;
       }
 
+      console.log("Appointment booked successfully:", data);
       toast.success("Appointment booked successfully!");
       setTimeout(() => {
         navigate("/dashboard");
       }, 1500);
     } catch (err) {
-      toast.error("Unexpected error booking appointment");
       console.error("Unexpected booking error:", err);
+      setBookingError("Unexpected error booking appointment");
+      toast.error("Unexpected error booking appointment");
     } finally {
       setIsBooking(false);
     }
@@ -246,6 +266,13 @@ const BookAppointment = () => {
                   onReasonChange={setReason}
                 />
               )}
+              
+              {bookingError && step === 3 && (
+                <div className="mt-4 flex items-center text-sm text-destructive">
+                  <span className="mr-2">⚠️</span>
+                  {bookingError}
+                </div>
+              )}
             </CardContent>
             <CardFooter className="flex justify-between border-t p-6">
               {step > 1 ? (
@@ -261,7 +288,11 @@ const BookAppointment = () => {
                   Continue
                 </Button>
               ) : (
-                <Button onClick={handleSubmit} disabled={isBooking}>
+                <Button 
+                  onClick={handleSubmit} 
+                  disabled={isBooking}
+                  className="bg-primary hover:bg-primary/90"
+                >
                   {isBooking ? "Booking..." : "Confirm Booking"}
                 </Button>
               )}
