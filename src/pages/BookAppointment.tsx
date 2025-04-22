@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Shell, DashboardHeader, DashboardSidebar } from "@/components/layout/Shell";
 import { format } from "date-fns";
@@ -83,26 +84,6 @@ const BookAppointment = () => {
 
   const getAvailableTimeSlots = () => {
     return timeSlots.filter(slot => !isTimeSlotBooked(slot));
-  };
-
-  const validateInputs = () => {
-    if (!specialty || !doctorId || !date || !time || !reason) {
-      toast.error("Please fill out all fields");
-      return false;
-    }
-
-    if (isTimeSlotBooked(time)) {
-      toast.error("This time slot is no longer available. Please choose another time.");
-      return false;
-    }
-
-    if (!user) {
-      toast.error("You must be logged in to book an appointment");
-      navigate("/login");
-      return false;
-    }
-
-    return true;
   };
 
   const nextStep = () => {
