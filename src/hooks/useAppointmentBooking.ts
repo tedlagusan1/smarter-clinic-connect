@@ -69,8 +69,14 @@ export const useAppointmentBooking = () => {
         reason
       });
       
+      // Create a UUID for numeric IDs to ensure compatibility with Supabase
+      // This is a workaround for testing with mock user IDs
+      const formattedUserId = userId && /^\d+$/.test(userId) 
+        ? `00000000-0000-0000-0000-${userId.padStart(12, '0')}` 
+        : userId;
+      
       const { data, error } = await supabase.from("appointments").insert({
-        user_id: userId,
+        user_id: formattedUserId,
         doctor_name: selectedDoctorName || "",
         specialty,
         date: format(date!, "yyyy-MM-dd"),
