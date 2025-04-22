@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Shell, DashboardHeader, DashboardSidebar } from "@/components/layout/Shell";
 import { format } from "date-fns";
@@ -33,7 +32,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Mock data for doctors
 const doctors = [
   {
     id: 1,
@@ -67,7 +65,6 @@ const doctors = [
   },
 ];
 
-// Mock data for time slots
 const timeSlots = [
   "9:00 AM",
   "9:30 AM",
@@ -85,7 +82,6 @@ const timeSlots = [
   "4:30 PM",
 ];
 
-// Type for booked appointments
 interface BookedAppointment {
   doctorId: number;
   date: string;
@@ -102,15 +98,12 @@ const BookAppointment = () => {
   const [reason, setReason] = useState("");
   const [step, setStep] = useState(1);
   
-  // New: Track loading state when booking appointment
   const [isBooking, setIsBooking] = useState(false);
   
-  // For checking booked slots, load existing bookings from Supabase
   const [bookedAppointments, setBookedAppointments] = useState<any[]>([]);
   useEffect(() => {
     async function fetchAppointments() {
       if (!doctorId || !date) return;
-      // To check for slot conflicts, fetch all appointments for the same doctor/date
       const formattedDate = format(date, "yyyy-MM-dd");
       const { data } = await supabase
         .from("appointments")
@@ -120,38 +113,27 @@ const BookAppointment = () => {
       setBookedAppointments(data || []);
     }
     fetchAppointments();
-    // Only re-fetch when doctor/date change, not every render
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctorId, date]);
   
-  // List of available specialties from our doctor data
   const specialties = [...new Set(doctors.map(doctor => doctor.specialty))];
   
-  // Filter doctors by selected specialty
   const filteredDoctors = specialty
     ? doctors.filter(doctor => doctor.specialty === specialty)
     : [];
   
-  // Get the selected doctor
   const selectedDoctor = doctors.find(doctor => doctor.id === parseInt(doctorId));
   
-  // Format the date to get the day of week
   const getDayOfWeek = (date: Date) => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     return days[date.getDay()];
   };
   
-  // Check if the selected date is available for the selected doctor
   const isDateAvailable = (date: Date) => {
     if (!selectedDoctor) return false;
     const dayOfWeek = getDayOfWeek(date);
     return selectedDoctor.availableDays.includes(dayOfWeek);
   };
   
-  // --- isDateAvailable and isTimeSlotBooked now consider Supabase appointments ---
-  // Main change is retrieving booked slots from Supabase
-  
-  // Check if a time slot is already booked for selected doctor and date
   const isTimeSlotBooked = (time: string) => {
     if (!date || !doctorId) return false;
     
@@ -164,12 +146,10 @@ const BookAppointment = () => {
     );
   };
   
-  // Get available time slots for selected doctor and date
   const getAvailableTimeSlots = () => {
     return timeSlots.filter(slot => !isTimeSlotBooked(slot));
   };
   
-  // Handle form submission: Book on Supabase
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     
@@ -194,10 +174,13 @@ const BookAppointment = () => {
     const formattedDate = format(date, "yyyy-MM-dd");
     const doctorName = selectedDoctor?.name || "";
     const location = selectedDoctor ? `${selectedDoctor.specialty} Office` : "Clinic";
+    
     try {
-      // Write appointment to supabase - FIX: Pass user.id directly as a string
+      const userId = user.id;
+      console.log("Booking with user ID:", userId);
+      
       const { error } = await supabase.from("appointments").insert({
-        user_id: user.id, // This ensures we're passing the UUID as a string
+        user_id: userId,
         doctor_name: doctorName,
         specialty,
         date: formattedDate,
@@ -377,10 +360,8 @@ const BookAppointment = () => {
                             }}
                             disabled={(date) => {
                               const day = date.getDay();
-                              // Disable weekends and dates in the past
                               const isWeekend = day === 0 || day === 6;
                               const isPast = date < new Date(new Date().setHours(0, 0, 0, 0));
-                              // Also disable dates not available for the selected doctor
                               const isAvailable = isDateAvailable(date);
                               return isPast || isWeekend || !isAvailable;
                             }}
